@@ -1,0 +1,1274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OWNER PORTAL | Studio Director & Content Management</title>
+  
+  <!-- Favicon -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔒</text></svg>" />
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Google Fonts & Luxury Styling -->
+  <link rel="stylesheet" href="assets/css/style.css" />
+
+  <style>
+    /* Specific styles for the Admin Dashboard */
+    .admin-wrapper {
+      min-height: 100vh;
+      background: #08080a;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Auth Gate Screen */
+    .auth-overlay {
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(circle at center, #14161f 0%, #070709 85%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 99999;
+      padding: 1.5rem;
+    }
+
+    .auth-card {
+      width: 100%;
+      max-width: 440px;
+      padding: 3rem 2.5rem;
+      border-radius: 24px;
+      background: rgba(18, 19, 26, 0.85);
+      border: 1px solid var(--border-gold);
+      box-shadow: 0 30px 100px rgba(0, 0, 0, 0.9), 0 0 50px rgba(229, 192, 123, 0.2);
+      backdrop-filter: blur(20px);
+      text-align: center;
+    }
+
+    .auth-input-group {
+      position: relative;
+      margin: 2rem 0 1.5rem;
+    }
+
+    .auth-input {
+      width: 100%;
+      padding: 1rem 1.25rem;
+      background: #0d0f14;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 12px;
+      color: #fff;
+      font-size: 1rem;
+      font-family: var(--font-mono);
+      text-align: center;
+      letter-spacing: 0.2em;
+      transition: var(--transition-fast);
+    }
+
+    .auth-input:focus {
+      outline: none;
+      border-color: var(--accent-gold);
+      box-shadow: 0 0 20px rgba(229, 192, 123, 0.3);
+    }
+
+    /* Admin Navigation */
+    .admin-header {
+      background: rgba(14, 15, 20, 0.9);
+      border-bottom: 1px solid var(--border-subtle);
+      padding: 1rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(16px);
+    }
+
+    .admin-tab-nav {
+      display: flex;
+      gap: 0.5rem;
+      background: rgba(255, 255, 255, 0.03);
+      padding: 0.35rem;
+      border-radius: 12px;
+      border: 1px solid var(--border-subtle);
+    }
+
+    .admin-tab-btn {
+      padding: 0.6rem 1.25rem;
+      border-radius: 8px;
+      background: transparent;
+      border: none;
+      color: var(--text-secondary);
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: var(--transition-fast);
+    }
+
+    .admin-tab-btn:hover {
+      color: #fff;
+    }
+
+    .admin-tab-btn.active {
+      background: var(--accent-gold);
+      color: #08080a;
+      font-weight: 700;
+    }
+
+    /* Dashboard Layout */
+    .admin-content {
+      max-width: 1320px;
+      margin: 0 auto;
+      padding: 2.5rem 2rem 5rem;
+      width: 100%;
+      flex-grow: 1;
+    }
+
+    .tab-section {
+      display: none;
+    }
+
+    .tab-section.active {
+      display: block;
+      animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Form Elements */
+    .form-group {
+      margin-bottom: 1.25rem;
+    }
+
+    .form-label {
+      display: block;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--accent-gold);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 0.45rem;
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 0.85rem 1rem;
+      background: #11131a;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      color: #fff;
+      font-size: 0.9rem;
+      font-family: var(--font-sans);
+      transition: var(--transition-fast);
+    }
+
+    .form-control:focus {
+      outline: none;
+      border-color: var(--accent-gold);
+      box-shadow: 0 0 15px rgba(229, 192, 123, 0.2);
+    }
+
+    .form-help {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      margin-top: 0.3rem;
+      display: block;
+    }
+
+    /* Project Admin Cards */
+    .project-admin-card {
+      display: grid;
+      grid-template-columns: 180px 1fr auto;
+      gap: 1.5rem;
+      align-items: center;
+      padding: 1.25rem 1.5rem;
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 14px;
+      margin-bottom: 1rem;
+      transition: var(--transition-fast);
+    }
+
+    @media (max-width: 768px) {
+      .project-admin-card {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .project-admin-card:hover {
+      border-color: var(--border-gold);
+      background: var(--bg-card-hover);
+    }
+
+    .project-admin-thumb {
+      width: 100%;
+      height: 100px;
+      object-fit: cover;
+      border-radius: 8px;
+      background: #000;
+    }
+
+    /* Modal for Editing / Adding Project */
+    .admin-modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(12px);
+      z-index: 10000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+    }
+
+    .admin-modal.active {
+      display: flex;
+    }
+
+    .admin-modal-card {
+      width: 100%;
+      max-width: 760px;
+      max-height: 90vh;
+      overflow-y: auto;
+      background: #0e0f14;
+      border: 1px solid var(--border-gold);
+      border-radius: 20px;
+      padding: 2.25rem;
+      box-shadow: 0 25px 80px rgba(0, 0, 0, 0.95);
+    }
+
+    /* Toast Notification */
+    .toast-pill {
+      position: fixed;
+      bottom: 2rem;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: #fff;
+      padding: 0.75rem 1.75rem;
+      border-radius: 9999px;
+      font-family: var(--font-sans);
+      font-size: 0.85rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      box-shadow: 0 10px 30px rgba(16, 185, 129, 0.4);
+      z-index: 999999;
+      opacity: 0;
+      transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .toast-pill.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+  </style>
+</head>
+<body class="admin-wrapper">
+
+  <!-- ==========================================
+       OWNER AUTHENTICATION GATE (PASSWORD LOCK)
+       ========================================== -->
+  <div id="auth-gate" class="auth-overlay">
+    <div class="auth-card">
+      <div class="nav-logo-mark" style="width: 52px; height: 52px; font-size: 1.5rem; margin: 0 auto 1.25rem;">
+        🔒
+      </div>
+      <h2 style="font-family: var(--font-serif); font-size: 1.6rem; color: #fff; margin-bottom: 0.5rem;">
+        Owner Authentication
+      </h2>
+      <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5;">
+        This portal is strictly restricted to the portfolio owner. Enter your security passcode to access studio management.
+      </p>
+
+      <form id="auth-form">
+        <div class="auth-input-group">
+          <input 
+            id="auth-passcode" 
+            type="password" 
+            class="auth-input" 
+            placeholder="••••••••" 
+            required 
+            autocomplete="current-password"
+            autofocus
+          />
+        </div>
+
+        <button type="submit" class="btn-gold-luxury" style="width: 100%; padding: 0.9rem;">
+          <i data-lucide="unlock" style="width: 16px; height: 16px;"></i>
+          <span>ENTER STUDIO PORTAL</span>
+        </button>
+
+        <div id="auth-error-msg" style="color: #ef4444; font-size: 0.78rem; font-family: var(--font-mono); margin-top: 1rem; display: none;">
+          ⚠️ Incorrect password. Try again or check documentation.
+        </div>
+
+        <p style="margin-top: 1.5rem; font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-muted);">
+          Default Passcode: <strong style="color: var(--accent-gold);">admin123</strong> (Can be changed in settings)
+        </p>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==========================================
+       AUTHENTICATED ADMIN HEADER & TABS
+       ========================================== -->
+  <header class="admin-header">
+    <div style="display: flex; align-items: center; gap: 1.25rem;">
+      <a href="index.html" class="nav-logo" target="_blank" title="View live portfolio">
+        <div class="nav-logo-mark">S</div>
+        <div>
+          <div class="nav-logo-text" style="font-size: 0.95rem;">STUDIO DIRECTOR</div>
+          <div style="font-family: var(--font-mono); font-size: 0.65rem; color: var(--accent-gold);">OWNER ADMIN PANEL</div>
+        </div>
+      </a>
+    </div>
+
+    <!-- Tab Navigation -->
+    <nav class="admin-tab-nav">
+      <button class="admin-tab-btn active" data-tab="tab-projects">
+        <i data-lucide="video" style="width: 15px; height: 15px;"></i>
+        <span>Projects Hub</span>
+      </button>
+      <button class="admin-tab-btn" data-tab="tab-profile">
+        <i data-lucide="user" style="width: 15px; height: 15px;"></i>
+        <span>Profile & Showreel</span>
+      </button>
+      <button class="admin-tab-btn" data-tab="tab-color">
+        <i data-lucide="palette" style="width: 15px; height: 15px;"></i>
+        <span>Color Science</span>
+      </button>
+      <button class="admin-tab-btn" data-tab="tab-pricing">
+        <i data-lucide="phone-call" style="width: 15px; height: 15px;"></i>
+        <span>WhatsApp & Rates</span>
+      </button>
+      <button class="admin-tab-btn" data-tab="tab-backup">
+        <i data-lucide="settings" style="width: 15px; height: 15px;"></i>
+        <span>Settings & Export</span>
+      </button>
+    </nav>
+
+    <!-- Top Action Buttons -->
+    <div style="display: flex; align-items: center; gap: 0.75rem;">
+      <a href="index.html" target="_blank" class="btn-glass-luxury" style="padding: 0.6rem 1.1rem; font-size: 0.75rem;">
+        <i data-lucide="external-link" style="width: 14px; height: 14px;"></i>
+        <span>LIVE WEBSITE</span>
+      </a>
+
+      <button id="header-save-btn" class="btn-gold-luxury" style="padding: 0.6rem 1.2rem; font-size: 0.75rem;">
+        <i data-lucide="save" style="width: 14px; height: 14px;"></i>
+        <span>SAVE ALL</span>
+      </button>
+
+      <button id="admin-logout-btn" class="btn-glass-luxury" style="padding: 0.6rem 0.9rem; font-size: 0.75rem;" title="Logout">
+        <i data-lucide="log-out" style="width: 14px; height: 14px;"></i>
+      </button>
+    </div>
+  </header>
+
+  <!-- ==========================================
+       MAIN DASHBOARD CONTENT
+       ========================================== -->
+  <main class="admin-content">
+
+    <!-- ----------------------------------------------------------------
+         TAB 1: PROJECTS HUB
+         ---------------------------------------------------------------- -->
+    <section id="tab-projects" class="tab-section active">
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 2rem;">
+        <div>
+          <h2 style="font-family: var(--font-serif); font-size: 2rem; color: #fff;">Portfolio Project Archive</h2>
+          <p style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.25rem;">
+            Add, update, or remove your edited video projects. Changes sync immediately with your public portfolio.
+          </p>
+        </div>
+
+        <button id="add-project-btn" class="btn-gold-luxury">
+          <i data-lucide="plus" style="width: 16px; height: 16px;"></i>
+          <span>ADD NEW VIDEO PROJECT</span>
+        </button>
+      </div>
+
+      <!-- Project Cards List -->
+      <div id="admin-projects-list">
+        <!-- Rendered dynamically -->
+      </div>
+    </section>
+
+    <!-- ----------------------------------------------------------------
+         TAB 2: PROFILE & HERO SHOWREEL
+         ---------------------------------------------------------------- -->
+    <section id="tab-profile" class="tab-section">
+      <div style="margin-bottom: 2rem;">
+        <h2 style="font-family: var(--font-serif); font-size: 2rem; color: #fff;">Profile & Hero Showreel</h2>
+        <p style="font-size: 0.85rem; color: var(--text-secondary);">
+          Customize your brand statement, hero video showreel, availability status, and milestone counters.
+        </p>
+      </div>
+
+      <div class="glass-panel" style="padding: 2.5rem; margin-bottom: 2rem;">
+        <h3 style="font-family: var(--font-display); font-size: 1.25rem; color: var(--accent-gold); margin-bottom: 1.5rem;">
+          🎬 Hero Showreel Settings
+        </h3>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+          <div class="form-group">
+            <label class="form-label">Showreel Title</label>
+            <input id="profile-hero-title" type="text" class="form-control" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Duration Badge (e.g. 01:42)</label>
+            <input id="profile-hero-duration" type="text" class="form-control" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Showreel Video URL (Direct MP4 or YouTube Link)</label>
+          <input id="profile-hero-video" type="text" class="form-control" />
+          <span class="form-help">Enter a YouTube URL (e.g. https://www.youtube.com/watch?v=...) or a direct MP4 link.</span>
+        </div>
+      </div>
+
+      <div class="glass-panel" style="padding: 2.5rem; margin-bottom: 2rem;">
+        <h3 style="font-family: var(--font-display); font-size: 1.25rem; color: var(--accent-gold); margin-bottom: 1.5rem;">
+          👤 Personal & Brand Info
+        </h3>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+          <div class="form-group">
+            <label class="form-label">Your Name</label>
+            <input id="profile-name" type="text" class="form-control" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Professional Title</label>
+            <input id="profile-title" type="text" class="form-control" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Availability Status Badge</label>
+          <input id="profile-availability" type="text" class="form-control" />
+          <span class="form-help">e.g. AVAILABLE FOR SELECT PROJECTS or BOOKING FOR Q2 2027</span>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Tagline (Hero Main Statement)</label>
+          <input id="profile-tagline" type="text" class="form-control" />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Full Bio / Philosophy</label>
+          <textarea id="profile-bio" rows="4" class="form-control"></textarea>
+        </div>
+      </div>
+
+      <div class="glass-panel" style="padding: 2.5rem;">
+        <h3 style="font-family: var(--font-display); font-size: 1.25rem; color: var(--accent-gold); margin-bottom: 1.5rem;">
+          📊 Key Stats Counters
+        </h3>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem;">
+          <div class="form-group">
+            <label class="form-label">Views Driven</label>
+            <input id="profile-stat-views" type="text" class="form-control" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Projects Completed</label>
+            <input id="profile-stat-projects" type="text" class="form-control" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Years of Craft</label>
+            <input id="profile-stat-exp" type="text" class="form-control" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Client Retention</label>
+            <input id="profile-stat-retention" type="text" class="form-control" />
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ----------------------------------------------------------------
+         TAB 3: COLOR SCIENCE SHOWCASE
+         ---------------------------------------------------------------- -->
+    <section id="tab-color" class="tab-section">
+      <div style="margin-bottom: 2rem;">
+        <h2 style="font-family: var(--font-serif); font-size: 2rem; color: #fff;">Color Science Comparison</h2>
+        <p style="font-size: 0.85rem; color: var(--text-secondary);">
+          Update the interactive split-screen Before/After images that demonstrate your DaVinci Resolve color grading prowess.
+        </p>
+      </div>
+
+      <div class="glass-panel" style="padding: 2.5rem;">
+        <div class="form-group">
+          <label class="form-label">Section Title</label>
+          <input id="color-title" type="text" class="form-control" />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Section Subtitle / Description</label>
+          <textarea id="color-desc" rows="3" class="form-control"></textarea>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+          <div class="form-group">
+            <label class="form-label">Before Image URL (Flat Raw Log Profile)</label>
+            <input id="color-before-url" type="text" class="form-control" />
+            <span class="form-help">Tip: You can use a desaturated / flat uncorrected frame grab.</span>
+          </div>
+          <div class="form-group">
+            <label class="form-label">After Image URL (Final Kodak Grade)</label>
+            <input id="color-after-url" type="text" class="form-control" />
+            <span class="form-help">Tip: Final high-res color graded frame grab.</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ----------------------------------------------------------------
+         TAB 4: WHATSAPP, RATES & CONTACT
+         ---------------------------------------------------------------- -->
+    <section id="tab-pricing" class="tab-section">
+      <div style="margin-bottom: 2rem;">
+        <h2 style="font-family: var(--font-serif); font-size: 2rem; color: #fff;">Direct Booking & Rates</h2>
+        <p style="font-size: 0.85rem; color: var(--text-secondary);">
+          Configure your WhatsApp direct messaging, contact email, and package price estimates.
+        </p>
+      </div>
+
+      <div class="glass-panel" style="padding: 2.5rem; margin-bottom: 2rem;">
+        <h3 style="font-family: var(--font-display); font-size: 1.25rem; color: var(--accent-gold); margin-bottom: 1.5rem;">
+          📱 Direct Contact Channels
+        </h3>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+          <div class="form-group">
+            <label class="form-label">WhatsApp Number (With Country Code)</label>
+            <input id="contact-whatsapp" type="text" class="form-control" placeholder="+919876543210" />
+            <span class="form-help">Clients clicking "Book via WhatsApp" will open a chat with this exact number.</span>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Inquiry Email Address</label>
+            <input id="contact-email" type="email" class="form-control" placeholder="editor@gmail.com" />
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem; margin-top: 1rem;">
+          <div class="form-group">
+            <label class="form-label">Instagram Profile Link</label>
+            <input id="contact-ig" type="text" class="form-control" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">YouTube Channel Link</label>
+            <input id="contact-yt" type="text" class="form-control" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Twitter / X Profile Link</label>
+            <input id="contact-tw" type="text" class="form-control" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">LinkedIn Profile Link</label>
+            <input id="contact-li" type="text" class="form-control" />
+          </div>
+        </div>
+      </div>
+
+      <div class="glass-panel" style="padding: 2.5rem;">
+        <h3 style="font-family: var(--font-display); font-size: 1.25rem; color: var(--accent-gold); margin-bottom: 1.5rem;">
+          💳 Package Estimates
+        </h3>
+        <div id="admin-packages-list">
+          <!-- Populated dynamically -->
+        </div>
+      </div>
+    </section>
+
+    <!-- ----------------------------------------------------------------
+         TAB 5: SETTINGS & EXPORT
+         ---------------------------------------------------------------- -->
+    <section id="tab-backup" class="tab-section">
+      <div style="margin-bottom: 2rem;">
+        <h2 style="font-family: var(--font-serif); font-size: 2rem; color: #fff;">Settings & Backup Hub</h2>
+        <p style="font-size: 0.85rem; color: var(--text-secondary);">
+          Change your admin passcode, download clean configuration files, or reset to original demo state.
+        </p>
+      </div>
+
+      <!-- Password Change -->
+      <div class="glass-panel" style="padding: 2.5rem; margin-bottom: 2rem;">
+        <h3 style="font-family: var(--font-display); font-size: 1.25rem; color: var(--accent-gold); margin-bottom: 1.25rem;">
+          🔐 Change Admin Passcode
+        </h3>
+        <div style="max-width: 450px;">
+          <div class="form-group">
+            <label class="form-label">New Owner Passcode</label>
+            <input id="new-admin-password" type="password" class="form-control" placeholder="Enter new passcode" />
+          </div>
+          <button id="save-password-btn" class="btn-gold-luxury" style="padding: 0.75rem 1.5rem; font-size: 0.8rem;">
+            <span>UPDATE PASSCODE</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Export & Download -->
+      <div class="glass-panel" style="padding: 2.5rem; margin-bottom: 2rem;">
+        <h3 style="font-family: var(--font-display); font-size: 1.25rem; color: var(--accent-gold); margin-bottom: 1.25rem;">
+          💾 Permanent File Backup & Deployment
+        </h3>
+        <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6; margin-bottom: 1.5rem;">
+          Jab aap yahan edit karte hain, toh browser ke storage mein data save ho jata hai. Agar aapko permanent file replace karni ho, toh aap updated <code>projects-data.js</code> file ko 1-click mein download kar sakte hain!
+        </p>
+
+        <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+          <button id="download-config-btn" class="btn-gold-luxury">
+            <i data-lucide="download" style="width: 16px; height: 16px;"></i>
+            <span>DOWNLOAD UPDATED PROJECTS-DATA.JS</span>
+          </button>
+
+          <button id="copy-config-btn" class="btn-glass-luxury">
+            <i data-lucide="copy" style="width: 16px; height: 16px;"></i>
+            <span>COPY CODE TO CLIPBOARD</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Reset -->
+      <div class="glass-panel" style="padding: 2.5rem; border-color: rgba(239, 68, 68, 0.3);">
+        <h3 style="font-family: var(--font-display); font-size: 1.25rem; color: #ef4444; margin-bottom: 0.75rem;">
+          ⚠️ Reset to Original Demo Data
+        </h3>
+        <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6; margin-bottom: 1.5rem;">
+          Agar aap sabhi changes clear karke wapas original demo videos aur state par aana chahte hain:
+        </p>
+        <button id="reset-defaults-btn" class="btn-glass-luxury" style="border-color: #ef4444; color: #ef4444;">
+          <i data-lucide="rotate-ccw" style="width: 16px; height: 16px;"></i>
+          <span>RESET TO DEFAULT DEMO PROJECTS</span>
+        </button>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ==========================================
+       PROJECT EDIT / ADD MODAL
+       ========================================== -->
+  <div id="project-modal" class="admin-modal">
+    <div class="admin-modal-card">
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border-subtle);">
+        <h3 id="modal-heading" style="font-family: var(--font-serif); font-size: 1.5rem; color: #fff;">
+          Edit Video Project
+        </h3>
+        <button id="modal-close-btn" style="background: none; border: none; color: #fff; cursor: pointer;">
+          <i data-lucide="x" style="width: 20px; height: 20px;"></i>
+        </button>
+      </div>
+
+      <form id="project-modal-form">
+        <input type="hidden" id="p-form-id" />
+
+        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.25rem;">
+          <div class="form-group">
+            <label class="form-label">Project Title</label>
+            <input id="p-form-title" type="text" class="form-control" required placeholder="e.g. Cyber Noir: Porsche Taycan" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Client Name</label>
+            <input id="p-form-client" type="text" class="form-control" required placeholder="e.g. Porsche Studios" />
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.25rem;">
+          <div class="form-group">
+            <label class="form-label">Category</label>
+            <select id="p-form-category" class="form-control">
+              <option value="commercial">Commercials & Ads</option>
+              <option value="music-video">Music Videos</option>
+              <option value="retention">YouTube & Retention</option>
+              <option value="fashion">Fashion & Aesthetics</option>
+              <option value="vfx-color">Color Grading & VFX</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Category Label</label>
+            <input id="p-form-cat-label" type="text" class="form-control" placeholder="e.g. Commercial Film" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Duration</label>
+            <input id="p-form-duration" type="text" class="form-control" placeholder="01:15" />
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem;">
+          <div class="form-group">
+            <label class="form-label">Year</label>
+            <input id="p-form-year" type="text" class="form-control" placeholder="2026" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Views Metric</label>
+            <input id="p-form-views" type="text" class="form-control" placeholder="3.4M+" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Full Video Link (YouTube Link OR Direct MP4 URL)</label>
+          <input id="p-form-video" type="text" class="form-control" required placeholder="https://www.youtube.com/watch?v=... or https://domain.com/video.mp4" />
+          <span class="form-help">Modal mein client yeh video dekhega. YouTube link ya MP4 link dono support karta hai.</span>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Thumbnail Image URL</label>
+          <input id="p-form-thumb" type="text" class="form-control" required placeholder="https://images.unsplash.com/..." />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Hover Preview Video URL (Direct MP4 URL)</label>
+          <input id="p-form-preview" type="text" class="form-control" placeholder="https://domain.com/preview.mp4" />
+          <span class="form-help">Card par mouse le jaate hi silent preview play karne ke liye direct MP4 link.</span>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Project Description</label>
+          <textarea id="p-form-desc" rows="3" class="form-control" placeholder="Brief summary of your editing choices, sound foley, and story rhythm..."></textarea>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Software Used (Comma-separated)</label>
+          <input id="p-form-software" type="text" class="form-control" placeholder="Premiere Pro, DaVinci Resolve, After Effects" />
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 1rem; margin-top: 2rem;">
+          <button type="button" id="modal-cancel-btn" class="btn-glass-luxury">
+            <span>CANCEL</span>
+          </button>
+          <button type="submit" class="btn-gold-luxury">
+            <i data-lucide="check" style="width: 16px; height: 16px;"></i>
+            <span>SAVE PROJECT</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="toast-pill">
+    <i data-lucide="check-circle" style="width: 18px; height: 18px;"></i>
+    <span id="toast-msg">Changes saved successfully!</span>
+  </div>
+
+  <!-- Scripts -->
+  <script src="assets/js/projects-data.js"></script>
+  <script>
+    // ==============================================================================
+    // OWNER ADMIN ENGINE LOGIC
+    // ==============================================================================
+
+    const DEFAULT_PASS = "admin123";
+    let activeConfig = null;
+
+    document.addEventListener('DOMContentLoaded', () => {
+      initAuth();
+      loadActiveConfig();
+      initTabs();
+      renderProjects();
+      populateProfileTab();
+      populateColorTab();
+      populatePricingTab();
+      initSaveButtons();
+      initProjectModal();
+      initSettingsTab();
+
+      if (window.lucide) window.lucide.createIcons();
+    });
+
+    /**
+     * 1. Authentication Gate
+     */
+    function initAuth() {
+      const gate = document.getElementById('auth-gate');
+      const form = document.getElementById('auth-form');
+      const input = document.getElementById('auth-passcode');
+      const errorMsg = document.getElementById('auth-error-msg');
+      const logoutBtn = document.getElementById('admin-logout-btn');
+
+      // Check existing session
+      const isAuthed = sessionStorage.getItem('OWNER_AUTH_TOKEN') === 'true';
+      if (isAuthed) {
+        gate.style.display = 'none';
+      }
+
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const currentPass = localStorage.getItem('PORTFOLIO_ADMIN_PASSWORD') || DEFAULT_PASS;
+        if (input.value === currentPass) {
+          sessionStorage.setItem('OWNER_AUTH_TOKEN', 'true');
+          gate.style.display = 'none';
+          showToast("Welcome, Studio Director!");
+        } else {
+          errorMsg.style.display = 'block';
+          input.value = '';
+          input.focus();
+        }
+      });
+
+      if (logoutBtn) {
+        logoutBtn.addEventListener('click', () => {
+          sessionStorage.removeItem('OWNER_AUTH_TOKEN');
+          gate.style.display = 'flex';
+          input.value = '';
+          errorMsg.style.display = 'none';
+        });
+      }
+    }
+
+    /**
+     * 2. Load Active Config from localStorage or projects-data.js
+     */
+    function loadActiveConfig() {
+      const saved = localStorage.getItem('PORTFOLIO_CUSTOM_DATA');
+      if (saved) {
+        try {
+          activeConfig = JSON.parse(saved);
+        } catch (e) {
+          activeConfig = JSON.parse(JSON.stringify(window.PORTFOLIO_CONFIG));
+        }
+      } else {
+        activeConfig = JSON.parse(JSON.stringify(window.PORTFOLIO_CONFIG));
+      }
+    }
+
+    function saveActiveConfig() {
+      localStorage.setItem('PORTFOLIO_CUSTOM_DATA', JSON.stringify(activeConfig, null, 2));
+      showToast("All changes saved & synced live with portfolio!");
+    }
+
+    /**
+     * 3. Tab Switching
+     */
+    function initTabs() {
+      const tabBtns = document.querySelectorAll('.admin-tab-btn');
+      const tabSections = document.querySelectorAll('.tab-section');
+
+      tabBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+          tabBtns.forEach(b => b.classList.remove('active'));
+          tabSections.forEach(s => s.classList.remove('active'));
+
+          btn.classList.add('active');
+          const targetId = btn.dataset.tab;
+          const targetSection = document.getElementById(targetId);
+          if (targetSection) targetSection.classList.add('active');
+
+          if (window.lucide) window.lucide.createIcons();
+        });
+      });
+    }
+
+    /**
+     * 4. Projects Hub Management (CRUD)
+     */
+    function renderProjects() {
+      const container = document.getElementById('admin-projects-list');
+      if (!container) return;
+
+      container.innerHTML = '';
+      activeConfig.projects.forEach((proj, idx) => {
+        const item = document.createElement('div');
+        item.className = 'project-admin-card';
+        item.innerHTML = `
+          <div>
+            <img src="${proj.thumbnail}" class="project-admin-thumb" alt="${proj.title}" onerror="this.src='https://images.unsplash.com/photo-1536240478700-b869070f9279?w=300'" />
+          </div>
+
+          <div>
+            <div style="display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.4rem;">
+              <span class="badge-luxury-tag">${proj.categoryLabel || proj.category}</span>
+              <span style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-muted);">${proj.duration} • ${proj.views}</span>
+            </div>
+            <h3 style="font-family: var(--font-display); font-size: 1.15rem; color: #fff; font-weight: 700; margin-bottom: 0.25rem;">
+              ${proj.title}
+            </h3>
+            <div style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.5rem;">
+              Client: <strong style="color: #fff;">${proj.client}</strong>
+            </div>
+            <div style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--accent-gold); max-width: 500px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+              URL: ${proj.youtubeEmbedUrl || proj.fullVideoUrl}
+            </div>
+          </div>
+
+          <div style="display: flex; align-items: center; gap: 0.6rem;">
+            <button class="btn-glass-luxury edit-proj-btn" data-id="${proj.id}" style="padding: 0.6rem 1rem; font-size: 0.75rem;">
+              <i data-lucide="edit-3" style="width: 14px; height: 14px;"></i>
+              <span>EDIT</span>
+            </button>
+            <button class="btn-glass-luxury delete-proj-btn" data-id="${proj.id}" style="padding: 0.6rem 0.85rem; border-color: rgba(239, 68, 68, 0.4); color: #ef4444;" title="Delete Project">
+              <i data-lucide="trash-2" style="width: 14px; height: 14px;"></i>
+            </button>
+          </div>
+        `;
+
+        container.appendChild(item);
+      });
+
+      // Bind edit / delete
+      container.querySelectorAll('.edit-proj-btn').forEach(btn => {
+        btn.addEventListener('click', () => openEditModal(btn.dataset.id));
+      });
+
+      container.querySelectorAll('.delete-proj-btn').forEach(btn => {
+        btn.addEventListener('click', () => deleteProject(btn.dataset.id));
+      });
+
+      if (window.lucide) window.lucide.createIcons();
+    }
+
+    function deleteProject(id) {
+      const proj = activeConfig.projects.find(p => p.id === id);
+      if (!proj) return;
+
+      if (confirm(`Are you sure you want to delete "${proj.title}"?`)) {
+        activeConfig.projects = activeConfig.projects.filter(p => p.id !== id);
+        renderProjects();
+        saveActiveConfig();
+      }
+    }
+
+    /**
+     * 5. Modal: Add / Edit Project
+     */
+    function initProjectModal() {
+      const modal = document.getElementById('project-modal');
+      const addBtn = document.getElementById('add-project-btn');
+      const closeBtn = document.getElementById('modal-close-btn');
+      const cancelBtn = document.getElementById('modal-cancel-btn');
+      const form = document.getElementById('project-modal-form');
+
+      addBtn.addEventListener('click', () => {
+        document.getElementById('modal-heading').textContent = "Add New Video Project";
+        document.getElementById('p-form-id').value = "project-" + Date.now();
+        document.getElementById('p-form-title').value = "";
+        document.getElementById('p-form-client').value = "";
+        document.getElementById('p-form-cat-label').value = "Commercial Film";
+        document.getElementById('p-form-duration').value = "01:30";
+        document.getElementById('p-form-year').value = "2026";
+        document.getElementById('p-form-views').value = "1.5M+";
+        document.getElementById('p-form-video').value = "";
+        document.getElementById('p-form-thumb').value = "https://images.unsplash.com/photo-1536240478700-b869070f9279?auto=format&fit=crop&w=1200&q=80";
+        document.getElementById('p-form-preview').value = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4";
+        document.getElementById('p-form-desc').value = "Crafted with dynamic pacing, sound design, and color grading.";
+        document.getElementById('p-form-software').value = "Premiere Pro, DaVinci Resolve, After Effects";
+
+        modal.classList.add('active');
+      });
+
+      const closeModal = () => modal.classList.remove('active');
+      closeBtn.addEventListener('click', closeModal);
+      cancelBtn.addEventListener('click', closeModal);
+
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const id = document.getElementById('p-form-id').value;
+        const videoInput = document.getElementById('p-form-video').value.trim();
+
+        let isYT = videoInput.includes('youtube.com') || videoInput.includes('youtu.be');
+        let ytEmbed = null;
+
+        if (isYT) {
+          let ytId = '';
+          if (videoInput.includes('youtu.be/')) {
+            ytId = videoInput.split('youtu.be/')[1].split('?')[0];
+          } else if (videoInput.includes('v=')) {
+            ytId = videoInput.split('v=')[1].split('&')[0];
+          } else if (videoInput.includes('embed/')) {
+            ytId = videoInput.split('embed/')[1].split('?')[0];
+          }
+          ytEmbed = `https://www.youtube.com/embed/${ytId}?autoplay=1&rel=0`;
+        }
+
+        const projectData = {
+          id: id,
+          title: document.getElementById('p-form-title').value,
+          client: document.getElementById('p-form-client').value,
+          category: document.getElementById('p-form-category').value,
+          categoryLabel: document.getElementById('p-form-cat-label').value || "Commercial",
+          duration: document.getElementById('p-form-duration').value || "01:00",
+          year: document.getElementById('p-form-year').value || "2026",
+          views: document.getElementById('p-form-views').value || "1M+",
+          badge: "FEATURED WORK",
+          thumbnail: document.getElementById('p-form-thumb').value,
+          previewVideo: document.getElementById('p-form-preview').value || videoInput,
+          fullVideoUrl: videoInput,
+          youtubeEmbedUrl: ytEmbed,
+          description: document.getElementById('p-form-desc').value,
+          software: document.getElementById('p-form-software').value.split(',').map(s => s.trim()).filter(Boolean),
+          deliverables: ["4K Master", "9:16 Social Cut", "Dolby Sound"],
+          metrics: {
+            avgWatchTime: "90%",
+            retentionLift: "+35%",
+            shares: "50K+"
+          }
+        };
+
+        const existingIdx = activeConfig.projects.findIndex(p => p.id === id);
+        if (existingIdx >= 0) {
+          activeConfig.projects[existingIdx] = { ...activeConfig.projects[existingIdx], ...projectData };
+        } else {
+          activeConfig.projects.unshift(projectData); // Add to top
+        }
+
+        renderProjects();
+        saveActiveConfig();
+        closeModal();
+      });
+    }
+
+    function openEditModal(id) {
+      const proj = activeConfig.projects.find(p => p.id === id);
+      if (!proj) return;
+
+      document.getElementById('modal-heading').textContent = "Edit Project: " + proj.title;
+      document.getElementById('p-form-id').value = proj.id;
+      document.getElementById('p-form-title').value = proj.title || "";
+      document.getElementById('p-form-client').value = proj.client || "";
+      document.getElementById('p-form-category').value = proj.category || "commercial";
+      document.getElementById('p-form-cat-label').value = proj.categoryLabel || "";
+      document.getElementById('p-form-duration').value = proj.duration || "";
+      document.getElementById('p-form-year').value = proj.year || "";
+      document.getElementById('p-form-views').value = proj.views || "";
+      document.getElementById('p-form-video').value = proj.youtubeEmbedUrl || proj.fullVideoUrl || "";
+      document.getElementById('p-form-thumb').value = proj.thumbnail || "";
+      document.getElementById('p-form-preview').value = proj.previewVideo || "";
+      document.getElementById('p-form-desc').value = proj.description || "";
+      document.getElementById('p-form-software').value = (proj.software || []).join(', ');
+
+      document.getElementById('project-modal').classList.add('active');
+    }
+
+    /**
+     * 6. Populate & Collect Profile Tab
+     */
+    function populateProfileTab() {
+      const p = activeConfig.profile;
+      if (!p) return;
+
+      document.getElementById('profile-hero-title').value = p.heroShowreel ? p.heroShowreel.title : "";
+      document.getElementById('profile-hero-duration').value = p.heroShowreel ? p.heroShowreel.duration : "";
+      document.getElementById('profile-hero-video').value = p.heroShowreel ? (p.heroShowreel.videoUrl || p.heroShowreel.youtubeId || "") : "";
+
+      document.getElementById('profile-name').value = p.name || "";
+      document.getElementById('profile-title').value = p.title || "";
+      document.getElementById('profile-availability').value = p.availabilityBadge || "";
+      document.getElementById('profile-tagline').value = p.tagline || "";
+      document.getElementById('profile-bio').value = p.bio || "";
+
+      document.getElementById('profile-stat-views').value = p.viewsGenerated || "";
+      document.getElementById('profile-stat-projects').value = p.projectsCompleted || "";
+      document.getElementById('profile-stat-exp').value = p.experienceYears || "";
+      document.getElementById('profile-stat-retention').value = p.satisfactionRate || "";
+    }
+
+    function collectProfileTab() {
+      activeConfig.profile.name = document.getElementById('profile-name').value;
+      activeConfig.profile.title = document.getElementById('profile-title').value;
+      activeConfig.profile.availabilityBadge = document.getElementById('profile-availability').value;
+      activeConfig.profile.tagline = document.getElementById('profile-tagline').value;
+      activeConfig.profile.bio = document.getElementById('profile-bio').value;
+
+      activeConfig.profile.viewsGenerated = document.getElementById('profile-stat-views').value;
+      activeConfig.profile.projectsCompleted = document.getElementById('profile-stat-projects').value;
+      activeConfig.profile.experienceYears = document.getElementById('profile-stat-exp').value;
+      activeConfig.profile.satisfactionRate = document.getElementById('profile-stat-retention').value;
+
+      const heroVid = document.getElementById('profile-hero-video').value.trim();
+      activeConfig.profile.heroShowreel = {
+        title: document.getElementById('profile-hero-title').value,
+        duration: document.getElementById('profile-hero-duration').value,
+        type: heroVid.includes('youtube.com') || heroVid.includes('youtu.be') ? 'youtube' : 'direct',
+        videoUrl: heroVid,
+        poster: "https://images.unsplash.com/photo-1536240478700-b869070f9279?auto=format&fit=crop&w=1920&q=80"
+      };
+    }
+
+    /**
+     * 7. Populate & Collect Color Science Tab
+     */
+    function populateColorTab() {
+      const c = activeConfig.colorGradingShowcase;
+      if (!c) return;
+
+      document.getElementById('color-title').value = c.title || "";
+      document.getElementById('color-desc').value = c.description || "";
+      document.getElementById('color-before-url').value = c.beforeImage || "";
+      document.getElementById('color-after-url').value = c.afterImage || "";
+    }
+
+    function collectColorTab() {
+      if (!activeConfig.colorGradingShowcase) activeConfig.colorGradingShowcase = {};
+      activeConfig.colorGradingShowcase.title = document.getElementById('color-title').value;
+      activeConfig.colorGradingShowcase.description = document.getElementById('color-desc').value;
+      activeConfig.colorGradingShowcase.beforeImage = document.getElementById('color-before-url').value;
+      activeConfig.colorGradingShowcase.afterImage = document.getElementById('color-after-url').value;
+    }
+
+    /**
+     * 8. Populate & Collect Pricing Tab
+     */
+    function populatePricingTab() {
+      const p = activeConfig.profile;
+      if (p) {
+        document.getElementById('contact-whatsapp').value = p.whatsapp || "";
+        document.getElementById('contact-email').value = p.email || "";
+        document.getElementById('contact-ig').value = p.instagram || "";
+        document.getElementById('contact-yt').value = p.youtube || "";
+        document.getElementById('contact-tw').value = p.twitter || "";
+        document.getElementById('contact-li').value = p.linkedin || "";
+      }
+
+      const pkgContainer = document.getElementById('admin-packages-list');
+      if (pkgContainer && activeConfig.calculatorPackages) {
+        pkgContainer.innerHTML = activeConfig.calculatorPackages.map((pkg, idx) => `
+          <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 1rem; align-items: center; margin-bottom: 0.75rem;">
+            <input type="text" class="form-control pkg-name-input" data-idx="${idx}" value="${pkg.name}" />
+            <input type="text" class="form-control pkg-price-input" data-idx="${idx}" value="${pkg.basePrice}" placeholder="₹Price" />
+            <input type="text" class="form-control pkg-dur-input" data-idx="${idx}" value="${pkg.duration}" placeholder="Days" />
+          </div>
+        `).join('');
+      }
+    }
+
+    function collectPricingTab() {
+      activeConfig.profile.whatsapp = document.getElementById('contact-whatsapp').value;
+      activeConfig.profile.email = document.getElementById('contact-email').value;
+      activeConfig.profile.instagram = document.getElementById('contact-ig').value;
+      activeConfig.profile.youtube = document.getElementById('contact-yt').value;
+      activeConfig.profile.twitter = document.getElementById('contact-tw').value;
+      activeConfig.profile.linkedin = document.getElementById('contact-li').value;
+
+      document.querySelectorAll('.pkg-name-input').forEach(input => {
+        const idx = input.dataset.idx;
+        if (activeConfig.calculatorPackages[idx]) {
+          activeConfig.calculatorPackages[idx].name = input.value;
+        }
+      });
+      document.querySelectorAll('.pkg-price-input').forEach(input => {
+        const idx = input.dataset.idx;
+        if (activeConfig.calculatorPackages[idx]) {
+          activeConfig.calculatorPackages[idx].basePrice = input.value;
+        }
+      });
+      document.querySelectorAll('.pkg-dur-input').forEach(input => {
+        const idx = input.dataset.idx;
+        if (activeConfig.calculatorPackages[idx]) {
+          activeConfig.calculatorPackages[idx].duration = input.value;
+        }
+      });
+    }
+
+    /**
+     * 9. Global Save All
+     */
+    function initSaveButtons() {
+      const saveBtn = document.getElementById('header-save-btn');
+      saveBtn.addEventListener('click', () => {
+        collectProfileTab();
+        collectColorTab();
+        collectPricingTab();
+        saveActiveConfig();
+      });
+    }
+
+    /**
+     * 10. Settings & Export
+     */
+    function initSettingsTab() {
+      // Change Password
+      const savePassBtn = document.getElementById('save-password-btn');
+      savePassBtn.addEventListener('click', () => {
+        const newPass = document.getElementById('new-admin-password').value.trim();
+        if (newPass.length < 4) {
+          alert("Passcode must be at least 4 characters long.");
+          return;
+        }
+        localStorage.setItem('PORTFOLIO_ADMIN_PASSWORD', newPass);
+        document.getElementById('new-admin-password').value = "";
+        showToast("Admin passcode updated successfully!");
+      });
+
+      // Download projects-data.js
+      const downloadBtn = document.getElementById('download-config-btn');
+      downloadBtn.addEventListener('click', () => {
+        collectProfileTab();
+        collectColorTab();
+        collectPricingTab();
+
+        const fileContent = `/**
+ * ==============================================================================
+ * PORTFOLIO DATA CONFIGURATION
+ * Generated via Studio Director Admin Panel
+ * ==============================================================================
+ */
+
+const PORTFOLIO_CONFIG = ${JSON.stringify(activeConfig, null, 2)};
+
+window.PORTFOLIO_CONFIG = PORTFOLIO_CONFIG;
+`;
+        const blob = new Blob([fileContent], { type: "text/javascript" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "projects-data.js";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        showToast("Downloaded projects-data.js!");
+      });
+
+      // Copy Code
+      const copyBtn = document.getElementById('copy-config-btn');
+      copyBtn.addEventListener('click', () => {
+        collectProfileTab();
+        collectColorTab();
+        collectPricingTab();
+
+        const code = `const PORTFOLIO_CONFIG = ${JSON.stringify(activeConfig, null, 2)};\nwindow.PORTFOLIO_CONFIG = PORTFOLIO_CONFIG;`;
+        navigator.clipboard.writeText(code).then(() => {
+          showToast("Copied config code to clipboard!");
+        });
+      });
+
+      // Reset to defaults
+      const resetBtn = document.getElementById('reset-defaults-btn');
+      resetBtn.addEventListener('click', () => {
+        if (confirm("Are you sure you want to reset all portfolio data to original demo projects? Any custom edits will be cleared.")) {
+          localStorage.removeItem('PORTFOLIO_CUSTOM_DATA');
+          location.reload();
+        }
+      });
+    }
+
+    /**
+     * Toast Helper
+     */
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      const toastMsg = document.getElementById('toast-msg');
+      if (!toast) return;
+
+      toastMsg.textContent = msg;
+      toast.classList.add('show');
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 3500);
+    }
+  </script>
+</body>
+</html>
+
